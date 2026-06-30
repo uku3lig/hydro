@@ -57,9 +57,18 @@ function _hydro_postexec --on-event fish_postexec
     set --global _hydro_cmd_duration "$out "
 end
 
+function _hydro_ssh --on-variable SSH_CONNECTION
+    if test -z "$SSH_CONNECTION"
+        set --erase _hydro_ssh
+    else
+        set --global _hydro_ssh "$(whoami)@$(hostname) "
+    end
+end
+
 function _hydro_prompt --on-event fish_prompt
     set --query _hydro_status || set --global _hydro_status "$_hydro_newline$_hydro_color_prompt$hydro_symbol_prompt"
     set --query _hydro_pwd || _hydro_pwd
+    set --query _hydro_ssh || _hydro_ssh
 
     command kill $_hydro_last_pid 2>/dev/null
 
@@ -115,7 +124,7 @@ end
 
 set --global hydro_color_normal (set_color normal)
 
-for color in hydro_color_{pwd,git,error,prompt,duration,start}
+for color in hydro_color_{pwd,git,error,prompt,duration,start,ssh}
     function $color --on-variable $color --inherit-variable color
         set --query $color && set --global _$color (set_color $$color)
     end && $color
